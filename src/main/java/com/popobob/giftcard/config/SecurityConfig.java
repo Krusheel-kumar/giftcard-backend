@@ -22,6 +22,7 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/bogo/**").permitAll() // Open BOGO endpoints
                 .requestMatchers("/api/gift-cards/**").permitAll() // Open Customer endpoints
                 .requestMatchers("/api/admin/**").permitAll() // Open Admin endpoints (In prod, secure with JWT)
                 .anyRequest().authenticated()
