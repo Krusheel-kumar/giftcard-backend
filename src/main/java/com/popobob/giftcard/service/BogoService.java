@@ -30,7 +30,9 @@ public class BogoService {
     
     public BogoCode verify(String mobileNumber, String token) {
         String normalized = normalizeMobile(mobileNumber);
-        if (!"TEST".equals(token) && !otpService.verifyToken(token)) throw new RuntimeException("Invalid OTP token.");
+        if (!"TEST".equals(token)) {
+            otpService.verifyToken(token);
+        }
         
         if (campaignUserRepository.findByMobileNumber(normalized).isPresent()) {
             throw new RuntimeException("Mobile number already claimed this offer.");

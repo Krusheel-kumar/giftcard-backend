@@ -2,6 +2,7 @@ package com.popobob.giftcard.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -13,7 +14,7 @@ public class OtpService {
     private static final String MSG91_AUTH_KEY = "557539Tl9kAR3zw36a7347b5P1";
     private static final String VERIFY_URL = "https://control.msg91.com/api/v5/widget/verifyAccessToken";
     
-    public boolean verifyToken(String token) {
+    public void verifyToken(String token) {
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
@@ -25,9 +26,13 @@ public class OtpService {
             
             HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
             String response = restTemplate.postForObject(VERIFY_URL, request, String.class);
-            return response != null && !response.toLowerCase().contains("error");
+            if (response != null && response.toLowerCase().contains("\"type\":\"error\"")) {
+                throw new RuntimeException("MSG91 returned error: " + response);
+            }
+        } catch (HttpClientErrorException e) {
+            throw new RuntimeException("MSG91 HTTP Error: " + e.getResponseBodyAsString());
         } catch (Exception e) {
-            return false;
+            throw new RuntimeException("Verification failed: " + e.getMessage());
         }
     }
 }
