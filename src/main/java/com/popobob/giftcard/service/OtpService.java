@@ -11,7 +11,7 @@ import java.util.HashMap;
 
 @Service
 public class OtpService {
-    private static final String MSG91_AUTH_KEY = "557539Tl9kAR3zw36a7347b5P1";
+    private static final String MSG91_AUTH_KEY = "557539A3jnNLJWr6a73367fP1";
     private static final String VERIFY_URL = "https://control.msg91.com/api/v5/widget/verifyAccessToken";
     
     public void verifyToken(String token) {
