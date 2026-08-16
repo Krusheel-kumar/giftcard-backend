@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.time.LocalDateTime;
+import com.popobob.giftcard.dto.AdminStatsDto;
+import com.popobob.giftcard.dto.AdminRecordDto;
 
 @Service
 public class BogoService {
@@ -31,9 +34,7 @@ public class BogoService {
     
     public BogoCode verify(String mobileNumber, String customerName, String token) {
         String normalized = normalizeMobile(mobileNumber);
-        if (!"TEST".equals(token)) {
-            otpService.verifyToken(token);
-        }
+        otpService.verifyToken(token);
         
         if (campaignUserRepository.findByMobileNumber(normalized).isPresent()) {
             throw new RuntimeException("Mobile number already claimed this offer.");
@@ -81,11 +82,50 @@ public class BogoService {
         BogoCode code = bogoCodeRepository.findByCode(codeStr)
             .orElseThrow(() -> new RuntimeException("Code not found"));
         code.setStatus("REDEEMED");
+        code.setRedeemedAt(LocalDateTime.now());
         bogoCodeRepository.save(code);
     }
     
     public BogoCode lookupAdmin(String codeStr) {
         return bogoCodeRepository.findByCode(codeStr)
             .orElseThrow(() -> new RuntimeException("Code not found"));
+    }
+    
+    public AdminStatsDto getAdminStats() {
+        List<BogoCode> allCodes = bogoCodeRepository.findAll();
+        List<CampaignUser> allUsers = campaignUserRepository.findAll();
+        
+        Map<String, String> mobileToName = new HashMap<>();
+        for (CampaignUser u : allUsers) {
+            mobileToName.put(u.getMobileNumber(), u.getName());
+        }
+        
+        long generated = allCodes.size();
+        long redeemed = allCodes.stream().filter(c -> "REDEEMED".equals(c.getStatus())).count();
+        
+        List<AdminRecordDto> records = new ArrayList<>();
+        for (BogoCode c : allCodes) {
+            AdminRecordDto dto = new AdminRecordDto();
+            dto.setMobileNumber(c.getMobileNumber());
+            dto.setName(mobileToName.getOrDefault(c.getMobileNumber(), "Unknown"));
+            dto.setCode(c.getCode());
+            dto.setStatus(c.getStatus());
+            dto.setGeneratedAt(c.getCreatedAt());
+            dto.setRedeemedAt(c.getRedeemedAt());
+            records.add(dto);
+        }
+        
+        records.sort((a, b) -> {
+            if (a.getGeneratedAt() == null && b.getGeneratedAt() == null) return 0;
+            if (a.getGeneratedAt() == null) return 1;
+            if (b.getGeneratedAt() == null) return -1;
+            return b.getGeneratedAt().compareTo(a.getGeneratedAt());
+        });
+        
+        AdminStatsDto stats = new AdminStatsDto();
+        stats.setTotalGenerated(generated);
+        stats.setTotalRedeemed(redeemed);
+        stats.setRecords(records);
+        return stats;
     }
 }
