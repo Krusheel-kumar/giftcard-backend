@@ -14,6 +14,7 @@ public class BogoService {
     @Autowired private CampaignUserRepository campaignUserRepository;
     @Autowired private BogoCodeRepository bogoCodeRepository;
     @Autowired private OtpService otpService;
+    @Autowired private WhatsAppService whatsappService;
     
     private String normalizeMobile(String mobile) {
         if (mobile == null) return "";
@@ -28,7 +29,7 @@ public class BogoService {
         }
     }
     
-    public BogoCode verify(String mobileNumber, String token) {
+    public BogoCode verify(String mobileNumber, String customerName, String token) {
         String normalized = normalizeMobile(mobileNumber);
         if (!"TEST".equals(token)) {
             otpService.verifyToken(token);
@@ -38,17 +39,21 @@ public class BogoService {
             throw new RuntimeException("Mobile number already claimed this offer.");
         }
         
-        if (campaignUserRepository.findByMobileNumber(normalized).isEmpty()) {
-            CampaignUser user = new CampaignUser();
-            user.setMobileNumber(normalized);
-            campaignUserRepository.save(user);
-        }
+        CampaignUser user = new CampaignUser();
+        user.setMobileNumber(normalized);
+        user.setName(customerName);
+        campaignUserRepository.save(user);
         
         BogoCode code = new BogoCode();
         code.setCode("BOGO-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         code.setMobileNumber(normalized);
         code.setStatus("ACTIVE");
-        return bogoCodeRepository.save(code);
+        BogoCode savedCode = bogoCodeRepository.save(code);
+        
+        // Trigger WhatsApp Message
+        whatsappService.sendGiftCard(normalized, customerName, savedCode.getCode());
+        
+        return savedCode;
     }
     
     public Map<String, Object> validate(String codeStr, String storeId, List<Map<String, Object>> cartItems) {

@@ -11,4 +11,5 @@ public class CampaignUser {
     private Long id;
     
     private String mobileNumber;
+    private String name;
 }
