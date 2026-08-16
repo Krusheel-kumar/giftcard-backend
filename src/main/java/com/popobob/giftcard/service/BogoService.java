@@ -51,7 +51,12 @@ public class BogoService {
         campaignUserRepository.save(user);
         
         BogoCode code = new BogoCode();
-        code.setCode("BOGO-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        String newCodeStr;
+        do {
+            newCodeStr = "BOGO-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        } while (bogoCodeRepository.findByCode(newCodeStr).isPresent());
+        
+        code.setCode(newCodeStr);
         code.setMobileNumber(normalized);
         code.setStatus("ACTIVE");
         BogoCode savedCode = bogoCodeRepository.save(code);
@@ -62,7 +67,11 @@ public class BogoService {
         return savedCode;
     }
     
+    private static final LocalDateTime CAMPAIGN_END = LocalDateTime.of(2026, 8, 31, 23, 59, 59);
+
     public Map<String, Object> validate(String codeStr, String storeId, List<Map<String, Object>> cartItems) {
+        if (LocalDateTime.now().isAfter(CAMPAIGN_END)) throw new RuntimeException("Campaign has ended.");
+        
         BogoCode code = bogoCodeRepository.findByCode(codeStr)
             .orElseThrow(() -> new RuntimeException("Code not found"));
         if (!"ACTIVE".equals(code.getStatus())) throw new RuntimeException("Code is no longer active (already redeemed).");
@@ -83,12 +92,14 @@ public class BogoService {
         return response;
     }
     
+    @org.springframework.transaction.annotation.Transactional
     public void redeem(String codeStr) {
-        BogoCode code = bogoCodeRepository.findByCode(codeStr)
-            .orElseThrow(() -> new RuntimeException("Code not found"));
-        code.setStatus("REDEEMED");
-        code.setRedeemedAt(LocalDateTime.now());
-        bogoCodeRepository.save(code);
+        if (LocalDateTime.now().isAfter(CAMPAIGN_END)) throw new RuntimeException("Campaign has ended.");
+        
+        int updated = bogoCodeRepository.redeemCodeAtomically(codeStr, LocalDateTime.now());
+        if (updated == 0) {
+            throw new RuntimeException("Code not found or already redeemed.");
+        }
     }
     
     public BogoCode lookupAdmin(String codeStr) {

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 
@@ -22,13 +23,19 @@ public class BogoController {
     private RateLimitingService rateLimitingService;
 
     @PostMapping("/claim")
-    public ResponseEntity<?> claim(@RequestBody Map<String, String> body) {
+    public ResponseEntity<?> claim(@RequestBody Map<String, String> body, HttpServletRequest request) {
         try {
+            String ip = request.getRemoteAddr();
+            Bucket ipBucket = rateLimitingService.resolveIpBucket(ip);
+            if (!ipBucket.tryConsume(1)) {
+                return ResponseEntity.status(429).body(Map.of("message", "Too many requests from this IP. Please try again later."));
+            }
+
             String mobile = body.get("mobileNumber");
             if (mobile == null) throw new RuntimeException("Mobile number is required");
-            Bucket bucket = rateLimitingService.resolveBucket(mobile);
-            if (!bucket.tryConsume(1)) {
-                return ResponseEntity.status(429).body(Map.of("message", "Too many requests. Please try again later."));
+            Bucket mobileBucket = rateLimitingService.resolveMobileBucket(mobile);
+            if (!mobileBucket.tryConsume(1)) {
+                return ResponseEntity.status(429).body(Map.of("message", "Too many requests for this mobile. Please try again later."));
             }
             bogoService.claim(mobile);
             return ResponseEntity.ok(Map.of("success", true));
@@ -38,13 +45,19 @@ public class BogoController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<?> verify(@RequestBody Map<String, String> body) {
+    public ResponseEntity<?> verify(@RequestBody Map<String, String> body, HttpServletRequest request) {
         try {
+            String ip = request.getRemoteAddr();
+            Bucket ipBucket = rateLimitingService.resolveIpBucket(ip);
+            if (!ipBucket.tryConsume(1)) {
+                return ResponseEntity.status(429).body(Map.of("message", "Too many requests from this IP. Please try again later."));
+            }
+
             String mobile = body.get("mobileNumber");
             if (mobile == null) throw new RuntimeException("Mobile number is required");
-            Bucket bucket = rateLimitingService.resolveBucket(mobile);
-            if (!bucket.tryConsume(1)) {
-                return ResponseEntity.status(429).body(Map.of("message", "Too many requests. Please try again later."));
+            Bucket mobileBucket = rateLimitingService.resolveMobileBucket(mobile);
+            if (!mobileBucket.tryConsume(1)) {
+                return ResponseEntity.status(429).body(Map.of("message", "Too many requests for this mobile. Please try again later."));
             }
             return ResponseEntity.ok(bogoService.verify(mobile, body.get("customerName"), body.get("token")));
         } catch (Exception e) {
@@ -53,8 +66,14 @@ public class BogoController {
     }
 
     @PostMapping("/validate")
-    public ResponseEntity<?> validate(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<?> validate(@RequestBody Map<String, Object> body, HttpServletRequest request) {
         try {
+            String ip = request.getRemoteAddr();
+            Bucket ipBucket = rateLimitingService.resolveIpBucket(ip);
+            if (!ipBucket.tryConsume(1)) {
+                return ResponseEntity.status(429).body(Map.of("message", "Too many requests from this IP. Please try again later."));
+            }
+
             String code = (String) body.get("code");
             String storeId = (String) body.get("storeId");
             List<Map<String, Object>> cartItems = (List<Map<String, Object>>) body.get("cartItems");

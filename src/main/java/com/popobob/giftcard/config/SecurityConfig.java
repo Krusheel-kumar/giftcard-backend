@@ -30,7 +30,8 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/login").permitAll()
-                .requestMatchers("/api/bogo/admin/**").authenticated() // Secure admin endpoints
+                .requestMatchers("/api/bogo/redeem").hasRole("ADMIN")
+                .requestMatchers("/api/bogo/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/bogo/**").permitAll() // Open BOGO endpoints
                 .requestMatchers("/api/gift-cards/**").permitAll() // Open Customer endpoints
                 .anyRequest().authenticated()
