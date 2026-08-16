@@ -19,8 +19,8 @@ public class RateLimitingService {
     }
 
     private Bucket newBucket(String key) {
-        // Allow 3 requests per hour per phone number
-        Bandwidth limit = Bandwidth.classic(3, Refill.greedy(3, Duration.ofHours(1)));
+        // Allow 50 requests per hour per phone number for testing
+        Bandwidth limit = Bandwidth.classic(50, Refill.greedy(50, Duration.ofHours(1)));
         return Bucket.builder().addLimit(limit).build();
     }
 }
