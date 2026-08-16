@@ -7,6 +7,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -17,7 +18,7 @@ public class OtpService {
 
     private static final String VERIFY_URL = "https://control.msg91.com/api/v5/widget/verifyAccessToken";
     
-    public void verifyToken(String token) {
+    public String verifyToken(String token) {
 
         try {
             RestTemplate restTemplate = new RestTemplate();
@@ -29,9 +30,17 @@ public class OtpService {
             body.put("access-token", token);
             
             HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
-            String response = restTemplate.postForObject(VERIFY_URL, request, String.class);
-            if (response != null && response.toLowerCase().contains("\"type\":\"error\"")) {
+            ResponseEntity<Map> responseEntity = restTemplate.postForEntity(VERIFY_URL, request, Map.class);
+            Map<String, Object> response = responseEntity.getBody();
+            
+            if (response != null && "error".equalsIgnoreCase((String) response.get("type"))) {
                 throw new RuntimeException("MSG91 returned error: " + response);
+            }
+            
+            if (response != null && response.containsKey("mobile")) {
+                return String.valueOf(response.get("mobile"));
+            } else {
+                throw new RuntimeException("MSG91 response missing mobile number.");
             }
         } catch (HttpClientErrorException e) {
             throw new RuntimeException("MSG91 HTTP Error: " + e.getResponseBodyAsString());

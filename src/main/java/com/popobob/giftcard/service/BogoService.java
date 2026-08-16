@@ -34,7 +34,12 @@ public class BogoService {
     
     public BogoCode verify(String mobileNumber, String customerName, String token) {
         String normalized = normalizeMobile(mobileNumber);
-        otpService.verifyToken(token);
+        String verifiedMobile = otpService.verifyToken(token);
+        String normalizedVerified = normalizeMobile(verifiedMobile);
+        
+        if (!normalized.equals(normalizedVerified)) {
+            throw new RuntimeException("Token mobile mismatch.");
+        }
         
         if (campaignUserRepository.findByMobileNumber(normalized).isPresent()) {
             throw new RuntimeException("Mobile number already claimed this offer.");
