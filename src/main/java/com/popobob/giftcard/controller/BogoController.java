@@ -29,7 +29,7 @@ public class BogoController {
     @PostMapping("/verify")
     public ResponseEntity<?> verify(@RequestBody Map<String, String> body) {
         try {
-            return ResponseEntity.ok(bogoService.verify(body.get("mobileNumber"), body.get("token")));
+            return ResponseEntity.ok(bogoService.verify(body.get("mobileNumber"), body.get("customerName"), body.get("token")));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
