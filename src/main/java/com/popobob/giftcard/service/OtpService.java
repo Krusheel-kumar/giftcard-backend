@@ -39,8 +39,12 @@ public class OtpService {
             
             if (response != null && response.containsKey("mobile")) {
                 return String.valueOf(response.get("mobile"));
+            } else if (response != null && response.containsKey("message") && response.get("message").toString().matches(".*\\d{10,}.*")) {
+                 // Try to extract from message if mobile key is missing but message contains a number
+                 String msg = response.get("message").toString();
+                 return msg.replaceAll("[^0-9]", "");
             } else {
-                throw new RuntimeException("MSG91 response missing mobile number.");
+                throw new RuntimeException("MSG91 response missing mobile number. Raw response: " + response);
             }
         } catch (HttpClientErrorException e) {
             throw new RuntimeException("MSG91 HTTP Error: " + e.getResponseBodyAsString());
