@@ -1,5 +1,6 @@
 package com.popobob.giftcard.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -10,7 +11,8 @@ import java.util.*;
 
 @Service
 public class WhatsAppService {
-    private static final String MSG91_AUTH_KEY = "557539A3jnNLJWr6a73367fP1";
+    @Value("${msg91.auth-key}")
+    private String MSG91_AUTH_KEY;
     private static final String WHATSAPP_API_URL = "https://api.msg91.com/api/v5/whatsapp/whatsapp-outbound-message/bulk/";
     
     @Async

@@ -1,6 +1,8 @@
 package com.popobob.giftcard.controller;
 
 import com.popobob.giftcard.service.BogoService;
+import com.popobob.giftcard.service.RateLimitingService;
+import io.github.bucket4j.Bucket;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,10 +18,19 @@ public class BogoController {
     @Autowired
     private BogoService bogoService;
 
+    @Autowired
+    private RateLimitingService rateLimitingService;
+
     @PostMapping("/claim")
     public ResponseEntity<?> claim(@RequestBody Map<String, String> body) {
         try {
-            bogoService.claim(body.get("mobileNumber"));
+            String mobile = body.get("mobileNumber");
+            if (mobile == null) throw new RuntimeException("Mobile number is required");
+            Bucket bucket = rateLimitingService.resolveBucket(mobile);
+            if (!bucket.tryConsume(1)) {
+                return ResponseEntity.status(429).body(Map.of("message", "Too many requests. Please try again later."));
+            }
+            bogoService.claim(mobile);
             return ResponseEntity.ok(Map.of("success", true));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
@@ -29,7 +40,13 @@ public class BogoController {
     @PostMapping("/verify")
     public ResponseEntity<?> verify(@RequestBody Map<String, String> body) {
         try {
-            return ResponseEntity.ok(bogoService.verify(body.get("mobileNumber"), body.get("customerName"), body.get("token")));
+            String mobile = body.get("mobileNumber");
+            if (mobile == null) throw new RuntimeException("Mobile number is required");
+            Bucket bucket = rateLimitingService.resolveBucket(mobile);
+            if (!bucket.tryConsume(1)) {
+                return ResponseEntity.status(429).body(Map.of("message", "Too many requests. Please try again later."));
+            }
+            return ResponseEntity.ok(bogoService.verify(mobile, body.get("customerName"), body.get("token")));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
@@ -66,6 +83,15 @@ public class BogoController {
                 "status", code.getStatus(),
                 "mobileNumber", code.getMobileNumber()
             ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/admin/stats")
+    public ResponseEntity<?> getAdminStats() {
+        try {
+            return ResponseEntity.ok(bogoService.getAdminStats());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }

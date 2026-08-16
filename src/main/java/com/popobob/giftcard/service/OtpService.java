@@ -1,5 +1,6 @@
 package com.popobob.giftcard.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
@@ -11,13 +12,12 @@ import java.util.HashMap;
 
 @Service
 public class OtpService {
-    private static final String MSG91_AUTH_KEY = "557539A3jnNLJWr6a73367fP1";
+    @Value("${msg91.auth-key}")
+    private String MSG91_AUTH_KEY;
+
     private static final String VERIFY_URL = "https://control.msg91.com/api/v5/widget/verifyAccessToken";
     
     public void verifyToken(String token) {
-        if ("1234".equals(token)) {
-            return;
-        }
 
         try {
             RestTemplate restTemplate = new RestTemplate();
