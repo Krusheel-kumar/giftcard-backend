@@ -43,7 +43,6 @@ public class WhatsAppService {
             language.put("code", "en");
             language.put("policy", "deterministic");
             template.put("language", language);
-            template.put("namespace", "a5a7cc47_8d2f_438b_ae71_db1e67e3edbe");
             
             List<Map<String, Object>> componentsList = new ArrayList<>();
             Map<String, Object> componentsWrapper = new HashMap<>();
