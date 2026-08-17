@@ -69,9 +69,11 @@ public class BogoController {
     public ResponseEntity<?> validate(@RequestBody Map<String, Object> body, HttpServletRequest request) {
         try {
             String ip = request.getRemoteAddr();
-            Bucket ipBucket = rateLimitingService.resolveIpBucket(ip);
-            if (!ipBucket.tryConsume(1)) {
-                return ResponseEntity.status(429).body(Map.of("message", "Too many requests from this IP. Please try again later."));
+            if (!"127.0.0.1".equals(ip) && !"0:0:0:0:0:0:0:1".equals(ip)) {
+                Bucket ipBucket = rateLimitingService.resolveIpBucket(ip);
+                if (!ipBucket.tryConsume(1)) {
+                    return ResponseEntity.status(429).body(Map.of("message", "Too many requests from this IP. Please try again later."));
+                }
             }
 
             String code = (String) body.get("code");
