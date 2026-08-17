@@ -39,10 +39,15 @@ public class AuthController {
             password = body.get("pin"); // Backwards compatibility for staff-admin UI
         }
         
+        System.out.println("DEBUG LOGIN: Attempted password = [" + password + "]");
+        System.out.println("DEBUG LOGIN: Expected adminPassword = [" + adminPassword + "]");
+        
         if (adminPassword.equals(password)) {
             String token = jwtUtil.generateToken("admin", "ADMIN");
+            System.out.println("DEBUG LOGIN: SUCCESS");
             return ResponseEntity.ok(Map.of("token", token));
         } else {
+            System.out.println("DEBUG LOGIN: FAILED");
             return ResponseEntity.status(401).body(Map.of("message", "Invalid credentials."));
         }
     }
