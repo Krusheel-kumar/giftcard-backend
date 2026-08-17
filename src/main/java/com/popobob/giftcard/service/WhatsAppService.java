@@ -54,14 +54,14 @@ public class WhatsAppService {
             // Header Image
             Map<String, String> header1 = new HashMap<>();
             header1.put("type", "image");
-            header1.put("value", "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=1000"); // Standard public image to bypass download blocks
+            header1.put("value", "https://raw.githubusercontent.com/Krusheel-kumar/giftcard-customer-ui/main/src/assets/rakshilandingpage.png"); 
             components.put("header_1", header1);
             
             // Body Variables
             components.put("body_1", Map.of("type", "text", "value", customerName != null ? customerName : "Valued Customer"));
             components.put("body_2", Map.of("type", "text", "value", "Buy 1 Get 1 Free"));
             components.put("body_3", Map.of("type", "text", "value", bogoCode));
-            components.put("body_4", Map.of("type", "text", "value", "31st August 2026"));
+            components.put("body_4", Map.of("type", "text", "value", "31st August"));
             
             componentsWrapper.put("components", components);
             componentsList.add(componentsWrapper);
