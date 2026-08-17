@@ -35,6 +35,10 @@ public class AuthController {
         }
 
         String password = body.get("password");
+        if (password == null) {
+            password = body.get("pin"); // Backwards compatibility for staff-admin UI
+        }
+        
         if (adminPassword.equals(password)) {
             String token = jwtUtil.generateToken("admin", "ADMIN");
             return ResponseEntity.ok(Map.of("token", token));
