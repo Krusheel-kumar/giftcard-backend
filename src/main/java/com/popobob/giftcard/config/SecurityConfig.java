@@ -30,9 +30,9 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/login").permitAll()
-                .requestMatchers("/api/bogo/redeem").hasRole("ADMIN")
-                .requestMatchers("/api/bogo/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/bogo/**").permitAll() // Open BOGO endpoints
+                .requestMatchers("/api/rewards/redeem").hasRole("ADMIN")
+                .requestMatchers("/api/rewards/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/rewards/**").permitAll() // Open rewards endpoints
                 .requestMatchers("/api/gift-cards/**").permitAll() // Open Customer endpoints
                 .anyRequest().authenticated()
             )
@@ -41,10 +41,13 @@ public class SecurityConfig {
         return http.build();
     }
 
+    @org.springframework.beans.factory.annotation.Value("${cors.allowed-origins}")
+    private List<String> allowedOrigins;
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(false);

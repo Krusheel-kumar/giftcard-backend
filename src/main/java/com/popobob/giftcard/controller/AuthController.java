@@ -25,10 +25,18 @@ public class AuthController {
     @Value("${admin.password}")
     private String adminPassword;
 
+    private String getClientIp(HttpServletRequest request) {
+        String xfHeader = request.getHeader("X-Forwarded-For");
+        if (xfHeader == null || xfHeader.isEmpty()) {
+            return request.getRemoteAddr();
+        }
+        return xfHeader.split(",")[0].trim();
+    }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body, HttpServletRequest request) {
         // IP-based login rate limiting: 5 attempts per hour
-        String ip = request.getRemoteAddr();
+        String ip = getClientIp(request);
         Bucket loginBucket = rateLimitingService.resolveIpBucket("login_" + ip);
         if (!loginBucket.tryConsume(1)) {
             return ResponseEntity.status(429).body(Map.of("message", "Too many login attempts. Please try again later."));
@@ -39,15 +47,10 @@ public class AuthController {
             password = body.get("pin"); // Backwards compatibility for staff-admin UI
         }
         
-        System.out.println("DEBUG LOGIN: Attempted password = [" + password + "]");
-        System.out.println("DEBUG LOGIN: Expected adminPassword = [" + adminPassword + "]");
-        
-        if (adminPassword.equals(password)) {
+        if (adminPassword != null && adminPassword.equals(password)) {
             String token = jwtUtil.generateToken("admin", "ADMIN");
-            System.out.println("DEBUG LOGIN: SUCCESS");
             return ResponseEntity.ok(Map.of("token", token));
         } else {
-            System.out.println("DEBUG LOGIN: FAILED");
             return ResponseEntity.status(401).body(Map.of("message", "Invalid credentials."));
         }
     }

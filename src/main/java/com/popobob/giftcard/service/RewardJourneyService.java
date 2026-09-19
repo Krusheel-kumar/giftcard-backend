@@ -19,6 +19,7 @@ public class RewardJourneyService {
     private final RewardRedemptionRepository redemptionRepository;
     private final CouponGeneratorService couponGeneratorService;
     private final OtpService otpService;
+    private final WhatsAppService whatsAppService;
 
     public RewardJourneyService(JourneyCustomerRepository customerRepository,
                                 RewardCampaignRepository campaignRepository,
@@ -26,7 +27,8 @@ public class RewardJourneyService {
                                 CustomerRewardRepository customerRewardRepository,
                                 RewardRedemptionRepository redemptionRepository,
                                 CouponGeneratorService couponGeneratorService,
-                                OtpService otpService) {
+                                OtpService otpService,
+                                WhatsAppService whatsAppService) {
         this.customerRepository = customerRepository;
         this.campaignRepository = campaignRepository;
         this.rewardDefinitionRepository = rewardDefinitionRepository;
@@ -34,6 +36,7 @@ public class RewardJourneyService {
         this.redemptionRepository = redemptionRepository;
         this.couponGeneratorService = couponGeneratorService;
         this.otpService = otpService;
+        this.whatsAppService = whatsAppService;
     }
 
     @Transactional
@@ -91,6 +94,9 @@ public class RewardJourneyService {
                 cr.setCouponCode(couponGeneratorService.generateCoupon(campaignCode, def.getSequence()));
                 cr.setActivatedAt(LocalDateTime.now());
                 cr.setExpiresAt(LocalDateTime.now().plusDays(def.getValidityDays()));
+                
+                // Trigger WhatsApp for first reward
+                triggerWhatsApp(customer, cr, def);
             } else {
                 cr.setStatus("LOCKED");
             }
@@ -99,6 +105,51 @@ public class RewardJourneyService {
         }
         
         return customerRewardRepository.findByCustomerIdAndCampaignIdOrderByRewardDefinitionIdAsc(customer.getId(), campaign.getId());
+    }
+
+    @Transactional
+    public void unlockNextRewardAndNotify(CustomerReward currentReward) {
+        List<CustomerReward> journey = customerRewardRepository.findByCustomerIdAndCampaignIdOrderByRewardDefinitionIdAsc(currentReward.getCustomerId(), currentReward.getCampaignId());
+        RewardCampaign campaign = campaignRepository.findById(currentReward.getCampaignId()).orElse(null);
+        if (campaign == null) return;
+        
+        boolean foundCurrent = false;
+        for (CustomerReward journeyReward : journey) {
+            if (foundCurrent && "LOCKED".equals(journeyReward.getStatus())) {
+                journeyReward.setStatus("PENDING_UNLOCK");
+                journeyReward.setActivatedAt(LocalDateTime.now().plusHours(24));
+                // We do NOT generate the coupon code or set expiresAt yet. 
+                // That will happen when the 24 hours are up via the cron job.
+                customerRewardRepository.save(journeyReward);
+                break; // Only setup the immediate next one
+            }
+            if (journeyReward.getId().equals(currentReward.getId())) {
+                foundCurrent = true;
+            }
+        }
+    }
+
+    @Transactional
+    public void executePendingUnlock(CustomerReward cr) {
+        RewardCampaign campaign = campaignRepository.findById(cr.getCampaignId()).orElse(null);
+        RewardDefinition def = rewardDefinitionRepository.findById(cr.getRewardDefinitionId()).orElse(null);
+        if (campaign == null || def == null) return;
+        
+        cr.setStatus("ACTIVE");
+        cr.setCouponCode(couponGeneratorService.generateCoupon(campaign.getCampaignCode(), def.getSequence()));
+        cr.setActivatedAt(LocalDateTime.now()); // reset activatedAt to actual unlock time
+        cr.setExpiresAt(LocalDateTime.now().plusDays(def.getValidityDays()));
+        customerRewardRepository.save(cr);
+        
+        JourneyCustomer customer = customerRepository.findById(cr.getCustomerId()).orElse(null);
+        if (customer != null) {
+            triggerWhatsApp(customer, cr, def);
+        }
+    }
+
+    private void triggerWhatsApp(JourneyCustomer customer, CustomerReward reward, RewardDefinition def) {
+        String expiry = reward.getExpiresAt().toLocalDate().toString(); // e.g. 2026-10-15
+        whatsAppService.sendGiftCard(customer.getMobile(), customer.getName(), reward.getCouponCode(), def.getName(), expiry);
     }
 
     @Transactional
@@ -122,6 +173,7 @@ public class RewardJourneyService {
         if (cr.getExpiresAt().isBefore(LocalDateTime.now())) {
             cr.setStatus("EXPIRED");
             customerRewardRepository.save(cr);
+            unlockNextRewardAndNotify(cr); // Auto unlock next if expired during redemption check
             throw new RuntimeException("Reward is EXPIRED");
         }
 
@@ -142,6 +194,9 @@ public class RewardJourneyService {
         redemption.setCampaignId(cr.getCampaignId());
         redemption.setStoreId(storeId);
         redemptionRepository.save(redemption);
+
+        // Unlock the next reward
+        unlockNextRewardAndNotify(cr);
 
         return redemption;
     }

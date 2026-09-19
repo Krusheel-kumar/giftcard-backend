@@ -10,6 +10,10 @@ public interface CustomerRewardRepository extends JpaRepository<CustomerReward, 
     List<CustomerReward> findByCustomerIdAndCampaignIdOrderByRewardDefinitionIdAsc(Long customerId, Long campaignId);
     Optional<CustomerReward> findByCouponCode(String couponCode);
     
+    // For Admin Dashboard Stats
+    long countByStatus(String status);
+    List<CustomerReward> findTop50ByOrderByIdDesc();
+    
     // For finding rewards that need to be unlocked today
     List<CustomerReward> findByStatus(String status);
     
@@ -18,6 +22,9 @@ public interface CustomerRewardRepository extends JpaRepository<CustomerReward, 
     
     // For expiry checks
     List<CustomerReward> findByStatusAndExpiresAtBefore(String status, LocalDateTime date);
+    
+    // For pending unlocks
+    List<CustomerReward> findByStatusAndActivatedAtBefore(String status, LocalDateTime date);
     
     // For reminders
     List<CustomerReward> findByStatusAndExpiresAtBetweenAndReminderStatusIsNullOrReminderStatusNot(
