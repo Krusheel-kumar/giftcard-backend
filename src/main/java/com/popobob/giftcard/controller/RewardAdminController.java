@@ -46,6 +46,17 @@ public class RewardAdminController {
             RewardDefinition def = rewardDefinitionRepository.findById(cr.getRewardDefinitionId())
                     .orElseThrow(() -> new RuntimeException("Reward definition not found"));
 
+            List<CustomerReward> journeyList = customerRewardRepository.findByCustomerIdAndCampaignIdOrderByRewardDefinitionIdAsc(cr.getCustomerId(), cr.getCampaignId());
+            List<Map<String, Object>> mappedJourney = journeyList.stream().map(j -> {
+                RewardDefinition jDef = rewardDefinitionRepository.findById(j.getRewardDefinitionId()).orElseThrow();
+                Map<String, Object> map = new HashMap<>();
+                map.put("sequence", jDef.getSequence());
+                map.put("name", jDef.getName());
+                map.put("status", j.getStatus());
+                map.put("redeemedAt", j.getRedeemedAt());
+                return map;
+            }).toList();
+
             Map<String, Object> response = new HashMap<>();
             response.put("valid", "ACTIVE".equals(cr.getStatus()));
             response.put("status", cr.getStatus());
@@ -54,6 +65,7 @@ public class RewardAdminController {
             response.put("rewardName", def.getName());
             response.put("rewardDescription", def.getDescription());
             response.put("expiresAt", cr.getExpiresAt());
+            response.put("journey", mappedJourney);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -64,15 +76,11 @@ public class RewardAdminController {
     @GetMapping("/stats")
     public ResponseEntity<?> getStats() {
         try {
-            // Simplified stats for the frontend
             long totalGenerated = customerRewardRepository.count();
-            // Just count REDEEMED status rewards
-            long totalRedeemed = customerRewardRepository.findAll().stream()
-                    .filter(cr -> "REDEEMED".equals(cr.getStatus()))
-                    .count();
+            long totalRedeemed = customerRewardRepository.countByStatus("REDEEMED");
 
-            // Fetch a few recent records
-            List<Map<String, Object>> records = customerRewardRepository.findAll().stream()
+            // Fetch a few recent records for the dashboard
+            List<Map<String, Object>> records = customerRewardRepository.findTop50ByOrderByIdDesc().stream()
                     .map(cr -> {
                         JourneyCustomer cust = customerRepository.findById(cr.getCustomerId()).orElse(new JourneyCustomer());
                         Map<String, Object> map = new HashMap<>();
@@ -88,7 +96,7 @@ public class RewardAdminController {
             Map<String, Object> stats = new HashMap<>();
             stats.put("totalGenerated", totalGenerated);
             stats.put("totalRedeemed", totalRedeemed);
-            stats.put("records", records); // In a real app, page this
+            stats.put("records", records);
 
             return ResponseEntity.ok(stats);
         } catch (Exception e) {

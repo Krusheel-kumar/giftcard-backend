@@ -16,7 +16,7 @@ public class WhatsAppService {
     private static final String WHATSAPP_API_URL = "https://api.msg91.com/api/v5/whatsapp/whatsapp-outbound-message/bulk/";
     
     @Async
-    public void sendGiftCard(String mobileNumber, String customerName, String bogoCode) {
+    public void sendGiftCard(String mobileNumber, String customerName, String bogoCode, String rewardName, String expiryDate) {
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
@@ -57,10 +57,10 @@ public class WhatsAppService {
             components.put("header_1", header1);
             
             // Body Variables
-            components.put("body_1", Map.of("type", "text", "value", customerName != null ? customerName : "Valued Customer"));
-            components.put("body_2", Map.of("type", "text", "value", "Buy 1 Get 1 Free"));
+            components.put("body_1", Map.of("type", "text", "value", customerName != null && !customerName.isEmpty() ? customerName : "Valued Customer"));
+            components.put("body_2", Map.of("type", "text", "value", rewardName));
             components.put("body_3", Map.of("type", "text", "value", bogoCode));
-            components.put("body_4", Map.of("type", "text", "value", "31st August"));
+            components.put("body_4", Map.of("type", "text", "value", expiryDate));
             
             componentsWrapper.put("components", components);
             componentsList.add(componentsWrapper);
