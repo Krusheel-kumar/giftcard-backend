@@ -28,9 +28,8 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        boolean forceWipe = true;
-        if (forceWipe || campaignRepository.count() == 0) {
-            System.out.println("Forcing wipe of database to fix 3-reward mismatch...");
+        if (campaignRepository.count() == 0) {
+            System.out.println("No campaigns found. Seeding new 3-reward campaign...");
 
             // Wipe all old data
             customerRewardRepository.deleteAll();
