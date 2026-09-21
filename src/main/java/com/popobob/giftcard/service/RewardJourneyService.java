@@ -117,10 +117,11 @@ public class RewardJourneyService {
         for (CustomerReward journeyReward : journey) {
             if (foundCurrent && "LOCKED".equals(journeyReward.getStatus())) {
                 journeyReward.setStatus("PENDING_UNLOCK");
-                journeyReward.setActivatedAt(LocalDateTime.now().plusHours(24));
-                // We do NOT generate the coupon code or set expiresAt yet. 
-                // That will happen when the 24 hours are up via the cron job.
+                journeyReward.setActivatedAt(LocalDateTime.now());
                 customerRewardRepository.save(journeyReward);
+                
+                // TEMPORARY FOR DEMO: Immediately execute the unlock so we don't have to wait for the 1-minute cron job
+                executePendingUnlock(journeyReward);
                 break; // Only setup the immediate next one
             }
             if (journeyReward.getId().equals(currentReward.getId())) {
