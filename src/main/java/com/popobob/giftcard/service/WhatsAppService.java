@@ -14,6 +14,9 @@ public class WhatsAppService {
     @Value("${msg91.auth-key}")
     private String MSG91_AUTH_KEY;
     private static final String WHATSAPP_API_URL = "https://api.msg91.com/api/v5/whatsapp/whatsapp-outbound-message/bulk/";
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.popobob.giftcard.config.JwtUtil jwtUtil;
     
     @Async
     public void sendGiftCard(String mobileNumber, String customerName, String bogoCode, String rewardName, String expiryDate) {
@@ -134,8 +137,14 @@ public class WhatsAppService {
             header1.put("value", "https://raw.githubusercontent.com/Krusheel-kumar/giftcard-customer-ui/main/src/assets/rakshilandingpage.png"); // Swap with VIP image later
             components.put("header_1", header1);
             
+            // Generate a 6-Month Magic Link Token to bypass OTP
+            long sixMonthsInMillis = 1000L * 60 * 60 * 24 * 180;
+            String jwt = jwtUtil.generateToken(mobileNumber, "CUSTOMER", sixMonthsInMillis);
+            String magicLink = "https://giftcard.popobob.com/?token=" + jwt;
+            
             // Body Variables
             components.put("body_1", Map.of("type", "text", "value", customerName != null && !customerName.isEmpty() ? customerName : "Valued Customer"));
+            components.put("body_2", Map.of("type", "text", "value", magicLink));
             
             componentsWrapper.put("components", components);
             componentsList.add(componentsWrapper);
