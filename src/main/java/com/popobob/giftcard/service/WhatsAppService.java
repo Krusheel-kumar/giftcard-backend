@@ -50,10 +50,24 @@ public class WhatsAppService {
             
             Map<String, Object> components = new HashMap<>();
             
+            // Determine Header Image based on the specific reward offer
+            String imageUrl = "https://raw.githubusercontent.com/Krusheel-kumar/giftcard-customer-ui/main/src/assets/rakshilandingpage.png"; // Default image
+            
+            if (rewardName != null) {
+                String lowerReward = rewardName.toLowerCase();
+                if (lowerReward.contains("buy 1 get 1") || lowerReward.contains("bogo")) {
+                    imageUrl = "https://raw.githubusercontent.com/Krusheel-kumar/giftcard-customer-ui/main/src/assets/buyonegetone.jpeg";
+                } else if (lowerReward.contains("20% off") || lowerReward.contains("20%")) {
+                    imageUrl = "https://raw.githubusercontent.com/Krusheel-kumar/giftcard-customer-ui/main/src/assets/20off.jpeg";
+                } else if (lowerReward.contains("free boba")) {
+                    imageUrl = "https://raw.githubusercontent.com/Krusheel-kumar/giftcard-customer-ui/main/src/assets/bobafood.jpeg";
+                }
+            }
+
             // Header Image
             Map<String, String> header1 = new HashMap<>();
             header1.put("type", "image");
-            header1.put("value", "https://raw.githubusercontent.com/Krusheel-kumar/giftcard-customer-ui/main/src/assets/rakshilandingpage.png"); 
+            header1.put("value", imageUrl); 
             components.put("header_1", header1);
             
             // Body Variables
