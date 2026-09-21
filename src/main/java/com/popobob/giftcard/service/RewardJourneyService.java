@@ -198,6 +198,16 @@ public class RewardJourneyService {
         // Unlock the next reward
         unlockNextRewardAndNotify(cr);
 
+        // VIP Graduation Logic
+        List<CustomerReward> fullJourney = customerRewardRepository.findByCustomerIdAndCampaignIdOrderByRewardDefinitionIdAsc(cr.getCustomerId(), cr.getCampaignId());
+        long redeemedCount = fullJourney.stream().filter(r -> "REDEEMED".equals(r.getStatus())).count();
+        if (redeemedCount == fullJourney.size() && fullJourney.size() > 0) {
+            JourneyCustomer cust = customerRepository.findById(cr.getCustomerId()).orElse(null);
+            if (cust != null) {
+                whatsAppService.sendVIPGraduationMessage(cust.getMobile(), cust.getName());
+            }
+        }
+
         return redemption;
     }
 
