@@ -54,11 +54,11 @@ public class WhatsAppService {
             Map<String, Object> components = new HashMap<>();
             
             // Determine Header Image based on the specific reward offer
-            String imageUrl = "https://raw.githubusercontent.com/Krusheel-kumar/giftcard-customer-ui/main/src/assets/rakshilandingpage.png"; // Default image
+            String imageUrl = "https://raw.githubusercontent.com/Krusheel-kumar/giftcard-customer-ui/main/public/brand-emblem.png"; // Default lightweight image
             
             if (rewardName != null) {
                 String lowerReward = rewardName.toLowerCase();
-                if (lowerReward.contains("buy 1 get 1") || lowerReward.contains("bogo")) {
+                if (lowerReward.contains("buy 1 get 1") || lowerReward.contains("buy 1 & get 1") || lowerReward.contains("bogo")) {
                     imageUrl = "https://raw.githubusercontent.com/Krusheel-kumar/giftcard-customer-ui/main/src/assets/buyonegetone.jpeg";
                 } else if (lowerReward.contains("20% off") || lowerReward.contains("20%")) {
                     imageUrl = "https://raw.githubusercontent.com/Krusheel-kumar/giftcard-customer-ui/main/src/assets/20off.jpeg";
@@ -134,7 +134,7 @@ public class WhatsAppService {
             // Header Image (Can be a special VIP gold card image)
             Map<String, String> header1 = new HashMap<>();
             header1.put("type", "image");
-            header1.put("value", "https://raw.githubusercontent.com/Krusheel-kumar/giftcard-customer-ui/main/src/assets/rakshilandingpage.png"); // Swap with VIP image later
+            header1.put("value", "https://raw.githubusercontent.com/Krusheel-kumar/giftcard-customer-ui/main/public/brand-emblem.png"); // Lightweight fallback
             components.put("header_1", header1);
             
             // Generate a 6-Month Magic Link Token to bypass OTP
