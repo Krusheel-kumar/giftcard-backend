@@ -63,7 +63,7 @@ public class WhatsAppService {
                 } else if (lowerReward.contains("20% off") || lowerReward.contains("20%")) {
                     imageUrl = "https://raw.githubusercontent.com/Krusheel-kumar/giftcard-customer-ui/main/src/assets/20off.jpeg";
                 } else if (lowerReward.contains("free boba")) {
-                    imageUrl = "https://raw.githubusercontent.com/Krusheel-kumar/giftcard-customer-ui/main/src/assets/bobafood.jpeg";
+                    imageUrl = "https://raw.githubusercontent.com/Krusheel-kumar/giftcard-customer-ui/main/public/freeboba.png";
                 }
             }
 
