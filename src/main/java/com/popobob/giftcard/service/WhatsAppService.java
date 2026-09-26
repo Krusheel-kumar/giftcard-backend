@@ -32,7 +32,7 @@ public class WhatsAppService {
             }
 
             Map<String, Object> payload = new HashMap<>();
-            payload.put("integrated_number", "917794971935");
+            payload.put("integrated_number", "15554681949");
             payload.put("content_type", "template");
             
             Map<String, Object> innerPayload = new HashMap<>();
@@ -110,7 +110,7 @@ public class WhatsAppService {
             }
 
             Map<String, Object> payload = new HashMap<>();
-            payload.put("integrated_number", "917794971935");
+            payload.put("integrated_number", "15554681949");
             payload.put("content_type", "template");
             
             Map<String, Object> innerPayload = new HashMap<>();
