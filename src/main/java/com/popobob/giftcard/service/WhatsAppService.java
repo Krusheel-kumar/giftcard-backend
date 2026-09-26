@@ -75,9 +75,10 @@ public class WhatsAppService {
             
             // Body Variables
             components.put("body_1", Map.of("type", "text", "value", customerName != null && !customerName.isEmpty() ? customerName : "Valued Customer"));
-            components.put("body_2", Map.of("type", "text", "value", rewardName));
-            components.put("body_3", Map.of("type", "text", "value", bogoCode));
-            components.put("body_4", Map.of("type", "text", "value", expiryDate));
+            components.put("body_2", Map.of("type", "text", "value", rewardName != null ? rewardName : "Exclusive"));
+            components.put("body_3", Map.of("type", "text", "value", bogoCode != null ? bogoCode : "POB-0000"));
+            components.put("body_4", Map.of("type", "text", "value", expiryDate != null ? expiryDate : "Limited Time"));
+            components.put("body_5", Map.of("type", "text", "value", "Film Nagar Outlet"));
             
             componentsWrapper.put("components", components);
             componentsList.add(componentsWrapper);
