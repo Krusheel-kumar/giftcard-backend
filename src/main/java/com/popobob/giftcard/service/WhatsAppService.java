@@ -32,7 +32,7 @@ public class WhatsAppService {
             }
 
             Map<String, Object> payload = new HashMap<>();
-            payload.put("integrated_number", "15554681949");
+            payload.put("integrated_number", "917794971935");
             payload.put("content_type", "template");
             
             Map<String, Object> innerPayload = new HashMap<>();
@@ -78,7 +78,6 @@ public class WhatsAppService {
             components.put("body_2", Map.of("type", "text", "value", rewardName != null ? rewardName : "Exclusive"));
             components.put("body_3", Map.of("type", "text", "value", bogoCode != null ? bogoCode : "POB-0000"));
             components.put("body_4", Map.of("type", "text", "value", expiryDate != null ? expiryDate : "Limited Time"));
-            components.put("body_5", Map.of("type", "text", "value", "Film Nagar Outlet"));
             
             componentsWrapper.put("components", components);
             componentsList.add(componentsWrapper);
@@ -111,7 +110,7 @@ public class WhatsAppService {
             }
 
             Map<String, Object> payload = new HashMap<>();
-            payload.put("integrated_number", "15554681949");
+            payload.put("integrated_number", "917794971935");
             payload.put("content_type", "template");
             
             Map<String, Object> innerPayload = new HashMap<>();
