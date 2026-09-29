@@ -40,7 +40,7 @@ public class WhatsAppService {
             innerPayload.put("type", "template");
             
             Map<String, Object> template = new HashMap<>();
-            template.put("name", "gift_card_delivery");
+            template.put("name", "offercard_template");
             
             Map<String, String> language = new HashMap<>();
             language.put("code", "en");
