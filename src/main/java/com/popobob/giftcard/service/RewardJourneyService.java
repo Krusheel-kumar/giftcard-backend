@@ -120,7 +120,7 @@ public class RewardJourneyService {
                 journeyReward.setActivatedAt(LocalDateTime.now());
                 customerRewardRepository.save(journeyReward);
                 
-                // TEMPORARY FOR DEMO: Immediately execute the unlock so we don't have to wait for the 1-minute cron job
+                // Execute immediately so they get the WhatsApp message right away
                 executePendingUnlock(journeyReward);
                 break; // Only setup the immediate next one
             }
@@ -176,6 +176,11 @@ public class RewardJourneyService {
             customerRewardRepository.save(cr);
             unlockNextRewardAndNotify(cr); // Auto unlock next if expired during redemption check
             throw new RuntimeException("Reward is EXPIRED");
+        }
+
+        // Validate 24-Hour Wait Period
+        if (cr.getActivatedAt().plusHours(24).isAfter(LocalDateTime.now())) {
+            throw new RuntimeException("Wait 24 hours! This reward will unlock tomorrow.");
         }
 
         // Check if ANY other reward in the same journey is being redeemed (no stacking)
