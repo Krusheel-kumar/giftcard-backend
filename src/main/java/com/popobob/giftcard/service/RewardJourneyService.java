@@ -180,7 +180,7 @@ public class RewardJourneyService {
 
         // Validate 24-Hour Wait Period
         if (cr.getActivatedAt().plusHours(24).isAfter(LocalDateTime.now())) {
-            throw new RuntimeException("Wait 24 hours! This reward will unlock tomorrow.");
+            throw new RuntimeException("Wait! This reward unlocks 24 hours after activation.");
         }
 
         // Check if ANY other reward in the same journey is being redeemed (no stacking)
