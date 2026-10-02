@@ -11,7 +11,7 @@ try:
     )
     cur = conn.cursor()
 
-    mobile = "7794971935"
+    mobile = "7799056666"
     
     # Delete from campaign_users just in case they used the old BOGO system
     try:
