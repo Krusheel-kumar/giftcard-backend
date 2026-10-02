@@ -14,7 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/rewards")
-@CrossOrigin(origins = "*")
+
 public class RewardJourneyController {
 
     private final RewardJourneyService rewardJourneyService;
@@ -46,14 +46,20 @@ public class RewardJourneyController {
             }
             String mobileNumber = request.get("mobileNumber");
             String customerName = request.get("customerName");
+            
+            // M-2: Input validation for customer name to prevent XSS
+            if (customerName != null && !customerName.matches("^[a-zA-Z .'-]{2,60}$")) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Invalid customer name format. Only letters, spaces, dots, hyphens, and apostrophes are allowed (2-60 chars)."));
+            }
+            
             String token = request.get("token");
             String qrSource = request.getOrDefault("source", "UNKNOWN");
             
             List<CustomerReward> journey = rewardJourneyService.startJourney(mobileNumber, customerName, token, campaignCode, qrSource);
             
-            // Generate a 6-month token for seamless re-entry
-            long sixMonthsInMillis = 1000L * 60 * 60 * 24 * 180;
-            String jwt = jwtUtil.generateToken(mobileNumber, "CUSTOMER", sixMonthsInMillis);
+            // Generate a 7-day token for seamless re-entry (shortened from 6 months for security)
+            long sevenDaysInMillis = 1000L * 60 * 60 * 24 * 7;
+            String jwt = jwtUtil.generateToken(mobileNumber, "CUSTOMER", sevenDaysInMillis);
             
             return ResponseEntity.ok(Map.of(
                 "journey", journey,

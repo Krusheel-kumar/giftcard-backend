@@ -137,9 +137,9 @@ public class WhatsAppService {
             header1.put("value", "https://raw.githubusercontent.com/Krusheel-kumar/giftcard-customer-ui/main/public/brand-emblem.png"); // Lightweight fallback
             components.put("header_1", header1);
             
-            // Generate a 6-Month Magic Link Token to bypass OTP
-            long sixMonthsInMillis = 1000L * 60 * 60 * 24 * 180;
-            String jwt = jwtUtil.generateToken(mobileNumber, "CUSTOMER", sixMonthsInMillis);
+            // Generate a 7-Day Magic Link Token to bypass OTP (shortened from 6 months for security)
+            long sevenDaysInMillis = 1000L * 60 * 60 * 24 * 7;
+            String jwt = jwtUtil.generateToken(mobileNumber, "CUSTOMER", sevenDaysInMillis);
             String magicLink = "https://giftcard.popobob.com/?token=" + jwt;
             
             // Body Variables

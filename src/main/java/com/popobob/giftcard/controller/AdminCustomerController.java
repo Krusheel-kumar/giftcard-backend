@@ -23,7 +23,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/admin/customers")
-@CrossOrigin(origins = "*")
+
 public class AdminCustomerController {
 
     @Autowired

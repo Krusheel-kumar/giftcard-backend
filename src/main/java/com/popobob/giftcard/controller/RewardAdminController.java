@@ -14,7 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/rewards/admin")
-@CrossOrigin(origins = "*")
+
 public class RewardAdminController {
 
     private final CustomerRewardRepository customerRewardRepository;
