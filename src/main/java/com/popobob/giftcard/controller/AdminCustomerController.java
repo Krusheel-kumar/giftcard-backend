@@ -47,6 +47,10 @@ public class AdminCustomerController {
 
     @GetMapping("/{mobile}/history")
     public List<AdminCustomerRewardDTO> getCustomerHistory(@PathVariable String mobile) {
+        // MED-1 FIX: Validate mobile format to prevent IDOR via malformed path params
+        if (mobile == null || !mobile.matches("^\\d{10,12}$")) {
+            return List.of();
+        }
         Optional<JourneyCustomer> customer = customerRepository.findByMobile(mobile);
         if (customer.isPresent()) {
             return rewardRepository.findHistoryByCustomerId(customer.get().getId());

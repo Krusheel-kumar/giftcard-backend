@@ -66,11 +66,9 @@ public class RewardJourneyController {
                 "token", jwt
             ));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+            // MED-3 FIX: Don't expose internal exception details to the client
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage().contains("mismatch") || e.getMessage().contains("Campaign") || e.getMessage().contains("OTP") ? e.getMessage() : "Something went wrong. Please try again."));
         }
-    }
-
-    @PostMapping("/redeem")
     public ResponseEntity<?> redeemCoupon(@RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
         try {
             // HIGH-2 FIX: Rate limit redeem attempts to prevent brute-force coupon guessing

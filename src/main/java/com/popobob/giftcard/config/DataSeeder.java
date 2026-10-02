@@ -31,12 +31,7 @@ public class DataSeeder implements CommandLineRunner {
         if (campaignRepository.count() == 0) {
             System.out.println("No campaigns found. Seeding new 3-reward campaign...");
 
-            // Wipe all old data
-            customerRewardRepository.deleteAll();
-            journeyCustomerRepository.deleteAll();
-            rewardDefinitionRepository.deleteAll();
-            campaignRepository.deleteAll();
-
+            // MED-2 FIX: Removed deleteAll() calls — seeder only inserts, never wipes data
             // Create Campaign
             RewardCampaign campaign = new RewardCampaign();
             campaign.setCampaignCode("POBFN");

@@ -14,6 +14,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.security.config.http.SessionCreationPolicy;
 
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Configuration
 @EnableWebSecurity
@@ -38,6 +40,13 @@ public class SecurityConfig {
                 .requestMatchers("/api/rewards/**").permitAll() // Open customer-facing rewards endpoints
                 .requestMatchers("/api/gift-cards/**").permitAll() // Open Customer endpoints
                 .anyRequest().authenticated()
+            )
+            // LOW-3 FIX: Enforce HTTPS via HSTS header — prevents protocol downgrade attacks
+            .headers(headers -> headers
+                .httpStrictTransportSecurity(hsts -> hsts
+                    .includeSubDomains(true)
+                    .maxAgeInSeconds(31536000)
+                )
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
             
