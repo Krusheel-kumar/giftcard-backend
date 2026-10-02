@@ -30,9 +30,12 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/login").permitAll()
-                .requestMatchers("/api/rewards/redeem").hasRole("ADMIN")
-                .requestMatchers("/api/rewards/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/rewards/**").permitAll() // Open rewards endpoints
+                // CRIT-1 FIX: Explicitly lock redeem endpoint to ADMIN only — must come before /api/rewards/** wildcard
+                .requestMatchers("/api/rewards/redeem").hasAuthority("ROLE_ADMIN")
+                // CRIT-2 FIX: Lock ALL /api/admin/** endpoints to ADMIN only — prevents customer JWT from accessing PII
+                .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers("/api/rewards/admin/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers("/api/rewards/**").permitAll() // Open customer-facing rewards endpoints
                 .requestMatchers("/api/gift-cards/**").permitAll() // Open Customer endpoints
                 .anyRequest().authenticated()
             )
