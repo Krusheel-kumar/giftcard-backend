@@ -1,7 +1,7 @@
 import urllib.request, json
 
 url = "https://api.msg91.com/api/v5/whatsapp/whatsapp-outbound-message/bulk/"
-auth_key = "***REMOVED***"
+auth_key = "557539A3jnNLJWr6a73367fP1"
 
 payload = {
     "integrated_number": "917794971935",

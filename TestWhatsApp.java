@@ -5,7 +5,7 @@ import java.io.*;
 
 public class TestWhatsApp {
     public static void main(String[] args) throws Exception {
-        String MSG91_AUTH_KEY = "***REMOVED***";
+        String MSG91_AUTH_KEY = "557539A3jnNLJWr6a73367fP1";
         String WHATSAPP_API_URL = "https://api.msg91.com/api/v5/whatsapp/whatsapp-outbound-message/bulk/";
 
         String mobileNumber = "7794971935";
