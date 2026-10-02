@@ -71,10 +71,17 @@ public class RewardJourneyController {
     }
 
     @PostMapping("/redeem")
-    public ResponseEntity<?> redeemCoupon(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> redeemCoupon(@RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
         try {
+            // HIGH-2 FIX: Rate limit redeem attempts to prevent brute-force coupon guessing
+            String ip = getClientIp(httpRequest);
+            Bucket redeemBucket = rateLimitingService.resolveIpBucket("redeem_" + ip);
+            if (!redeemBucket.tryConsume(1)) {
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                        .body(Map.of("success", false, "message", "Too many requests. Please try again later."));
+            }
             String couponCode = request.get("couponCode");
-            String storeId = request.get("storeId"); // e.g. FILM_NAGAR
+            String storeId = request.get("storeId");
             RewardRedemption redemption = rewardJourneyService.redeemCoupon(couponCode, storeId);
             return ResponseEntity.ok(redemption);
         } catch (Exception e) {

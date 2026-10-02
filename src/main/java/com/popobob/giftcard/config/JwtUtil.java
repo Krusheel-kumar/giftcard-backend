@@ -17,7 +17,8 @@ public class JwtUtil {
     private String secret;
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes());
+        // HIGH-3 FIX: Always use UTF-8 to avoid platform-default charset differences (Windows vs Linux)
+        return Keys.hmacShaKeyFor(secret.getBytes(java.nio.charset.StandardCharsets.UTF_8));
     }
 
     public String generateToken(String username, String role) {
