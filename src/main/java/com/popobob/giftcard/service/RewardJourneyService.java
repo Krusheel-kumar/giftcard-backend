@@ -55,9 +55,7 @@ public class RewardJourneyService {
         // 3. Find or Create Customer
         String normalizedMobile = normalizeMobile(mobileNumber);
         if (!normalizedMobile.equals(normalizeMobile(verifiedMobile))) {
-             // For testing ease, we might not fail here if MSG91 is stubbed, but ideally:
-             // throw new RuntimeException("Mobile number mismatch");
-             normalizedMobile = normalizeMobile(verifiedMobile);
+             throw new RuntimeException("Mobile number mismatch: The verified OTP does not belong to the requested mobile number.");
         }
 
         JourneyCustomer customer = customerRepository.findByMobile(normalizedMobile).orElse(null);
